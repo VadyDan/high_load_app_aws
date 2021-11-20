@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>High-Load App</title>
+</head>
+<body>
+    <h1>Hi, user!</h1>
+    <h2>Testing Amazon Web Services S3</h2>
+
+    <form method="POST" action="/delete">
+        Enter bucket name to delete: <input type="text" name="bucketName" /><br/>
+        <input type="submit" value="Submit" /><br/><br/>
+    </form>
+
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+        Enter bucket name to upload file: <input type="text" name="bucketName" /><br/>
+        <input type="file" name="file" /><br/>
+        <input type="submit" value="Submit" /><br/><br/>
+    </form>
+
+    <input id="newBucketName" type="text">
+    <button onclick="createBucket()">Create Bucket</button><br/>
+    <button onclick="fillBucketTable()">Show Buckets</button><br/><br/>
+
+    <table id="bucketList" th:border="1">
+
+    </table>
+    <br/>
+    <table id="bucketFilesList" th:border="1">
+
+    </table>
+
+<script>
+    function createBucket() {
+        const newBucketName = document.getElementById("newBucketName").value;
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (xhttp.readyState === XMLHttpRequest.DONE && xhttp.status === 200) {
+                fillBucketTable();
+            }
+        };
+        xhttp.open("POST", "http://localhost:8080/bucket/create/"+newBucketName);
+        console.log("http://localhost:8080/bucket/create/"+newBucketName)
+        xhttp.send();
+    }
+
+    function fillBucketTable() {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (xhttp.readyState === XMLHttpRequest.DONE && xhttp.status === 200) {
+                var bucketList = JSON.parse(this.responseText);
+                let html = '<tr>\n' +
+                    '        <th>№</th>\n' +
+                    '        <th>Bucket names</th>\n' +
+                    '    </tr>';
+                for (let i = 0; i < bucketList.length; i++) {
+                    const bucket = bucketList[i];
+                    console.log(bucket);
+                    html = html + '<tr><td>' + i + '</td>\n' +
+                        '        <td>' + bucket + '</td>\n' +
+                        '        <td>' + '<button onClick="showBucketFiles(\'' + bucket + '\')">Show Files</button>' +
+                        '</td></tr>';
+                }
+                document.getElementById("bucketList").innerHTML = html;
+            }
+        };
+        xhttp.open("GET", "http://localhost:8080/bucket/list");
+        xhttp.send();
+    }
+
+    function showBucketFiles(bucketName) {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (xhttp.readyState === XMLHttpRequest.DONE && xhttp.status === 200) {
+                var bucketFilesList = JSON.parse(this.response);
+                console.log(bucketFilesList)
+                let html = bucketName + '<tr>\n' +
+                    '        <th>№</th>\n' +
+                    '        <th>Name</th>\n' +
+                    '        <th>Size</th>\n' +
+                    '    </tr>';
+                for (file in bucketFilesList) {
+                    console.log(bucketFilesList[file])
+                    html = html + '<tr><td>' + file + '</td>\n' +
+                        '        <td>' + bucketFilesList[file]['fileName'] + '</td>\n' +
+                        '        <td>' + bucketFilesList[file]['fileSize'] + '</td>\n' +
+                        '        <td><form method="POST" ' + 'action="/file/delete/'+bucketName+'/'+bucketFilesList[file]['fileName']+'">\n' +
+                        '               <input type="submit" value="Delete" /><br/><br/>\n' +
+                        '            </form></td>\n' +
+                        '        <td><form method="GET" ' + 'action="/file/download/'+bucketName+'/'+bucketFilesList[file]['fileName']+'">\n' +
+                        '               <input type="submit" value="Download" /><br/><br/>\n' +
+                        '            </form></td>\n' +
+                        '        </td></tr>';
+                }
+                document.getElementById("bucketFilesList").innerHTML = html;
+            }
+        };
+        xhttp.open("GET", "http://localhost:8080/bucket/files/"+bucketName);
+        xhttp.send();
+    }
+</script>
+</body>
+</html>
