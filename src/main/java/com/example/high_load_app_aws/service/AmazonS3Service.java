@@ -34,11 +34,15 @@ public class AmazonS3Service {
             fileName = UUID.randomUUID() + file.getOriginalFilename();
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize());
-            amazonS3.putObject(bucketName, fileName, file.getInputStream(), metadata);
+            metadata.setContentType("image/jpeg");
+            amazonS3.putObject(
+                    new PutObjectRequest(bucketName, fileName, file.getInputStream(), metadata)
+                            .withCannedAcl(CannedAccessControlList.PublicRead));
             LOG.info("File Uploaded");
 
-        } catch (SdkClientException | IOException e) {
+        } catch (Exception e) {
             LOG.info("File Uploading exception");
+            e.printStackTrace();
             return "Exception";
         }
         return "File Uploaded Successfully \nFileName:- " + fileName;

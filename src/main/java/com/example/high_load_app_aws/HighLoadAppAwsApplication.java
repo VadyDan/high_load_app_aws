@@ -1,5 +1,6 @@
 package com.example.high_load_app_aws;
 
+import com.example.high_load_app_aws.service.AmazonRekognitionService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

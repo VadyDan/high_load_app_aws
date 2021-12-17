@@ -1,6 +1,7 @@
 package com.example.high_load_app_aws.controller;
 
 import com.example.high_load_app_aws.payload.FileUpload;
+import com.example.high_load_app_aws.service.AmazonRekognitionService;
 import com.example.high_load_app_aws.service.AmazonS3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,7 +19,6 @@ public class AmazonS3Controller {
 
     @Autowired
     private AmazonS3Service amazonS3Service;
-
 
     @PostMapping(value = "/bucket/create/{bucketName}")
     public String createBucket(@PathVariable String bucketName) {
@@ -67,4 +67,5 @@ public class AmazonS3Controller {
             outputStream.flush();
         };
     }
+
 }
